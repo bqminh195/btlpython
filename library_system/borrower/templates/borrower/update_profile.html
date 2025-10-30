@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <h3 class="text-center mb-4">👤 Cập nhật hồ sơ</h3>
+  <form method="post" class="col-md-6 offset-md-3 shadow p-4 bg-white rounded">
+    {% csrf_token %}
+    {{ user_form.as_p }}
+    {{ profile_form.as_p }}
+    <button type="submit" class="btn btn-success w-100">Lưu thay đổi</button>
+  </form>
+  <div class="text-center mt-3">
+    <a href="{% url 'borrower:profile' %}" class="btn btn-outline-secondary">Quay lại hồ sơ</a>
+  </div>
+</div>
+{% endblock %}

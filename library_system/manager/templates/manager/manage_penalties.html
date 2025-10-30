@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-danger mb-0">💰 Quản lý Phiếu Phạt</h2>
+        <div class="d-flex gap-2">
+            
+            <a href="{% url 'manager:manager_home' %}" class="btn btn-outline-secondary btn-lg shadow-sm px-4">
+                ⬅ Quay lại
+            </a>
+        </div>
+    </div>
+
+    <!-- Bộ lọc -->
+    <div class="card shadow-sm border-0 mb-4 rounded-4">
+        <div class="card-body">
+            <form method="get" action="{% url 'manager:manage_penalties' %}" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">🔍 Tìm kiếm</label>
+                    <input type="text" name="search" class="form-control shadow-sm"
+                        placeholder="Nhập tên người bị phạt..."
+                        value="{{ search|default:'' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">📋 Trạng thái</label>
+                    <select name="status" class="form-select shadow-sm">
+                        <option value="">-- Tất cả --</option>
+                        <option value="paid" {% if status == 'paid' %}selected{% endif %}>✅ Đã trả</option>
+                        <option value="unpaid" {% if status == 'unpaid' %}selected{% endif %}>🔴 Chưa trả</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-50 shadow-sm">Lọc</button>
+                    <a href="{% url 'manager:manage_penalties' %}" class="btn btn-secondary w-50 shadow-sm">Đặt lại</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bảng phiếu phạt -->
+    <div class="table-responsive shadow-sm rounded-4 overflow-hidden">
+        <table class="table table-hover align-middle text-center mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Người bị phạt</th>
+                    <th>Lý do</th>
+                    <th>Số tiền</th>
+                    <th>Ngày lập</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for penalty in page_obj %}
+                <tr class="{% if penalty.cleared %}table-success{% else %}table-danger{% endif %}">
+                    <td class="fw-semibold">{{ forloop.counter }}</td>
+                    <td>{{ penalty.user.username }}</td>
+                    <td class="text-start">{{ penalty.reason }}</td>
+                    <td class="fw-bold text-primary">{{ penalty.amount|floatformat:0 }}₫</td>
+                    <td>{{ penalty.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {% if penalty.cleared %}
+                            <span class="badge bg-success px-3 py-2">✔️ Đã trả</span>
+                        {% else %}
+                            <span class="badge bg-danger px-3 py-2">⚠️ Chưa trả</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not penalty.cleared %}
+                            <a href="{% url 'manager:clear_penalty' penalty.id %}" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm">
+                                💸 Xác nhận trả
+                            </a>
+                        {% else %}
+                            <span class="text-muted fw-semibold">✔️ Đã xử lý</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">Không có phiếu phạt nào được ghi nhận.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Phân trang -->
+    {% if page_obj.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center shadow-sm">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                    « Trước
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">« Trước</span></li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                    {{ num }}
+                </a>
+            </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                    Sau »
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Sau »</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- CSS tùy chỉnh -->
+<style>
+  .table-hover tbody tr:hover {
+    background-color: #f9fafc !important;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .badge {
+    font-size: 0.9rem;
+  }
+
+  .card {
+    border-left: 5px solid #dc3545;
+  }
+
+  .btn-outline-secondary:hover {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  .btn-lg {
+    font-size: 1rem;
+  }
+</style>
+{% endblock %}

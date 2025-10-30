@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <h3 class="mb-3 text-center">📝 Đăng ký tài khoản</h3>
+  <form method="post" class="col-md-6 offset-md-3 shadow p-4 rounded bg-white">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary w-100">Đăng ký</button>
+  </form>
+</div>
+{% endblock %}

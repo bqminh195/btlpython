@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+
+  <!-- Tiêu đề + các nút hành động -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>📚 Quản lý Sách</h2>
+    <div>
+      <a href="{% url 'manager:statistics' %}" class="btn btn-warning me-2">📊 Thống kê</a>
+      <a href="{% url 'manager:add_book' %}" class="btn btn-success me-2">➕ Thêm sách mới</a>
+      <a href="{% url 'manager:manage_loans' %}" class="btn btn-secondary me-2">📋 Quản lý mượn</a>
+      <a href="{% url 'manager:manage_penalties' %}" class="btn btn-danger me-2">⚠️ Quản lý phạt</a>
+      <a href="{% url 'manager:manage_check_requests' %}" class="btn btn-info text-white">📥 Check-in / 📤 Check-out</a>  <!-- ✅ Thêm nút mới -->
+    </div>
+  </div>
+
+  <!-- Bộ lọc & tìm kiếm -->
+  <form method="get" class="row g-2 align-items-center mb-4">
+    <div class="col-md-4">
+      <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="🔍 Tìm kiếm theo tên hoặc tác giả...">
+    </div>
+
+    <div class="col-md-3">
+      <select name="category" class="form-select">
+        <option value="">-- Thể loại --</option>
+        {% for c in categories %}
+          <option value="{{ c }}" {% if c == selected_category %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <select name="year" class="form-select">
+        <option value="">-- Năm XB --</option>
+        {% for y in years %}
+          <option value="{{ y }}" {% if y|stringformat:"s" == selected_year|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-3 text-end">
+      <button type="submit" class="btn btn-primary">Lọc</button>
+      <a href="{% url 'manager:manager_home' %}" class="btn btn-secondary">Đặt lại</a> <!-- ✅ sửa link -->
+    </div>
+  </form>
+
+  <p><strong>Tổng số sách:</strong> {{ total_books }}</p>
+
+{% if page_obj.paginator.count > 0 %}
+  <div class="row">
+    {% for book in page_obj %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          {% if book.cover %}
+            <img src="{{ book.cover.url }}" class="card-img-top" alt="Ảnh bìa sách" style="height: 250px; object-fit: cover;">
+          {% else %}
+            <div class="text-center p-5 text-muted">Không có ảnh</div>
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title">{{ book.title }}</h5>
+            <p class="card-text">
+              <strong>Tác giả:</strong> {{ book.author }}<br>
+              <strong>Năm XB:</strong> {{ book.year }}<br>
+              <strong>Thể loại:</strong> {{ book.category|default:"Chưa có" }}<br>
+              <strong>Còn lại:</strong> {{ book.available_copies }}/{{ book.total_copies }}
+            </p>
+          </div>
+          <div class="card-footer bg-white d-flex justify-content-between">
+            <a href="{% url 'manager:edit_book' book.id %}" class="btn btn-sm btn-warning">✏️ Sửa</a>
+            <a href="{% url 'manager:delete_book' book.id %}" class="btn btn-sm btn-danger"
+               onclick="return confirm('Bạn có chắc muốn xóa sách này không?');">🗑️ Xóa</a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="alert alert-secondary text-center">Không tìm thấy sách nào phù hợp.</div>
+    {% endfor %}
+  </div>
+
+  <!-- ✅ Phân trang -->
+  {% if page_obj.has_other_pages %}
+    <nav aria-label="Page navigation">
+      <ul class="pagination justify-content-center mt-4">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&category={{ category }}&year={{ year }}">« Trước</a>
+          </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+          {% if num == page_obj.number %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ num }}&q={{ query }}&category={{ category }}&year={{ year }}">{{ num }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}&category={{ category }}&year={{ year }}">Sau »</a>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
+{% else %}
+  <div class="alert alert-secondary text-center">Chưa có sách nào trong hệ thống.</div>
+{% endif %}
+
+</div>
+{% endblock %}

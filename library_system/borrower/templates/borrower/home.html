@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endfor %}
+{% endif %}
+
+{% if overdue_loans %}
+  <div class="alert alert-danger">
+    ⚠️ Bạn đang có {{ overdue_loans|length }} cuốn sách quá hạn chưa trả!
+    <ul class="mt-2 mb-0">
+      {% for loan in overdue_loans %}
+      <li>
+        <strong>{{ loan.book.title }}</strong> (hạn trả: {{ loan.due_date|date:"d/m/Y" }})
+      </li>
+      {% endfor %}
+    </ul>
+    <div class="text-end mt-3">
+      <a href="{% url 'borrower:my_penalties' %}" class="btn btn-outline-light border-danger text-danger fw-bold">
+        📋 Xem chi tiết
+      </a>
+    </div>
+  </div>
+{% endif %}
+
+
+
+ <!-- Tiêu đề + nút truy cập danh sách mượn + phiếu phạt -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>📖 Thư viện sách</h3>
+
+  <div>
+    <a href="{% url 'borrower:my_loans' %}" class="btn btn-primary me-2">
+      📚 Danh sách mượn
+    </a>
+    <a href="{% url 'borrower:my_penalties' %}" class="btn btn-danger">
+      💰 Phiếu phạt
+    </a>
+    <a href="{% url 'borrower:check_requests' %}" class="btn btn-warning">
+    🕒 Check-in / Check-out
+  </a>
+  </div>
+</div>
+
+
+
+  <!-- Sách mới nhất -->
+  <h5 class="mt-4 mb-3">✨ Sách mới nhất</h5>
+  <div class="row">
+    {% for book in new_books %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          {% if book.cover %}
+            <img src="{{ book.cover.url }}" class="card-img-top" alt="{{ book.title }}" style="height: 250px; object-fit: cover;">
+          {% else %}
+            <div class="text-center p-5 text-muted">Không có ảnh</div>
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title">{{ book.title }}</h5>
+            <p class="card-text mb-1"><strong>Tác giả:</strong> {{ book.author }}</p>
+            <p class="card-text mb-1"><strong>Năm XB:</strong> {{ book.year|default:"Không rõ" }}</p>
+            {% if book.category %}
+              <p class="card-text mb-1"><strong>Thể loại:</strong> {{ book.category }}</p>
+            {% endif %}
+            <p class="card-text mb-1"><strong>Còn lại:</strong> {{ book.available_copies }}/{{ book.total_copies }}</p>
+            {% if book.description %}
+              <p class="text-muted small">{{ book.description|truncatewords:20 }}</p>
+            {% endif %}
+          </div>
+          <div class="card-footer text-end bg-white">
+            {% if book.available_copies > 0 %}
+              <a href="{% url 'borrower:confirm_borrow' book.id %}" class="btn btn-success btn-sm">Mượn</a>
+            {% else %}
+              <button class="btn btn-secondary btn-sm" disabled>Hết sách</button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p class="text-muted">Chưa có sách nào được thêm gần đây.</p>
+    {% endfor %}
+  </div>
+
+  <hr>
+
+  <!-- Bộ lọc & tìm kiếm -->
+  <form method="get" class="row g-2 align-items-center mb-4">
+    <div class="col-md-4">
+      <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="🔍 Tìm kiếm theo tên hoặc tác giả...">
+    </div>
+
+    <div class="col-md-3">
+      <select name="category" class="form-select">
+        <option value="">-- Thể loại --</option>
+        {% for c in categories %}
+          <option value="{{ c }}" {% if c == selected_category %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <select name="year" class="form-select">
+        <option value="">-- Năm XB --</option>
+        {% for y in years %}
+          <option value="{{ y }}" {% if y|stringformat:"s" == selected_year|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-3 text-end">
+      <button type="submit" class="btn btn-primary">Lọc</button>
+      <a href="{% url 'borrower:borrower_home' %}" class="btn btn-secondary">Đặt lại</a>
+    </div>
+  </form>
+
+  <!-- Danh sách tất cả sách -->
+  <h5 class="mb-3">📚 Tất cả sách</h5>
+  <div class="row">
+    {% for book in page_obj %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          {% if book.cover %}
+            <img src="{{ book.cover.url }}" class="card-img-top" alt="{{ book.title }}" style="height: 250px; object-fit: cover;">
+          {% else %}
+            <div class="text-center p-5 text-muted">Không có ảnh</div>
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title">{{ book.title }}</h5>
+            <p class="card-text mb-1"><strong>Tác giả:</strong> {{ book.author }}</p>
+            <p class="card-text mb-1"><strong>Năm XB:</strong> {{ book.year|default:"Không rõ" }}</p>
+            {% if book.category %}
+              <p class="card-text mb-1"><strong>Thể loại:</strong> {{ book.category }}</p>
+            {% endif %}
+            <p class="card-text mb-1"><strong>Còn lại:</strong> {{ book.available_copies }}/{{ book.total_copies }}</p>
+            {% if book.description %}
+              <p class="text-muted small">{{ book.description|truncatewords:20 }}</p>
+            {% endif %}
+          </div>
+          <div class="card-footer text-end bg-white">
+            {% if book.available_copies > 0 %}
+              <a href="{% url 'borrower:confirm_borrow' book.id %}" class="btn btn-success btn-sm">Mượn</a>
+
+            {% else %}
+              <button class="btn btn-secondary btn-sm" disabled>Hết sách</button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="alert alert-secondary text-center">Không tìm thấy sách nào.</div>
+    {% endfor %}
+  </div>
+
+  <!-- Phân trang -->
+  {% if page_obj.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-4">
+      <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}">« Trước</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">« Trước</span></li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+          {% if num == page_obj.number %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+          {% else %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}">{{ num }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}">Sau »</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Sau »</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+#

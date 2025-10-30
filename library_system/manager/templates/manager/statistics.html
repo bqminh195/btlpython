@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <h3 class="text-center fw-bold mb-4">📊 Thống kê hoạt động thư viện</h3>
+
+  <form method="get" class="d-flex justify-content-center gap-3 mb-4">
+    <div>
+      <label>Từ tháng:</label>
+      <input type="month" name="start_month" value="{{ start_month }}" class="form-control">
+    </div>
+    <div>
+      <label>Đến tháng:</label>
+      <input type="month" name="end_month" value="{{ end_month }}" class="form-control">
+    </div>
+    <div class="align-self-end">
+      <button class="btn btn-primary">Lọc thống kê</button>
+    </div>
+  </form>
+
+  <div class="row text-center mb-4">
+    <div class="col-md-3"><div class="card p-3"><h5>📚 Sách thêm</h5><p>{{ books_added }}</p></div></div>
+    <div class="col-md-3"><div class="card p-3"><h5>📖 Sách mượn</h5><p>{{ loans_borrowed }}</p></div></div>
+    <div class="col-md-3"><div class="card p-3"><h5>✅ Sách trả</h5><p>{{ loans_returned }}</p></div></div>
+    <div class="col-md-3"><div class="card p-3"><h5>⚠️ Chưa thanh toán</h5><p>{{ penalties_unpaid }}</p></div></div>
+  </div>
+
+  <div class="text-center mb-4">
+    <h5>📕 Sách được mượn nhiều nhất: <b>{{ top_book_title }}</b></h5>
+  </div>
+
+  <div class="text-center">
+    <a href="{% url 'manager:export_excel' 'books' %}?start_month={{ start_month }}&end_month={{ end_month }}" class="btn btn-success me-2">📤 Xuất danh sách sách</a>
+    <a href="{% url 'manager:export_excel' 'loans' %}?start_month={{ start_month }}&end_month={{ end_month }}" class="btn btn-info me-2">📤 Xuất mượn trả</a>
+    <a href="{% url 'manager:export_excel' 'penalties' %}?start_month={{ start_month }}&end_month={{ end_month }}" class="btn btn-danger">📤 Xuất danh sách phạt</a>
+  </div>
+</div>
+{% endblock %}

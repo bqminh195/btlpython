@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5 text-center">
+  <h2 class="mb-4"><i class="bi bi-person-circle me-2"></i> Hồ sơ Quản lý</h2>
+
+  <div class="card mx-auto" style="max-width: 500px;">
+    <div class="card-body text-start">
+      <h5 class="card-title mb-3">Thông tin tài khoản</h5>
+      <p><strong>Tên đăng nhập:</strong> {{ user.username }}</p>
+
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success w-100 mt-2">Cập nhật hồ sơ</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card mx-auto mt-4" style="max-width: 500px;">
+    <div class="card-body text-center">
+      <h5 class="card-title mb-3">🔑 Cấp lại mật khẩu</h5>
+      <p class="text-muted">Nếu bạn quên mật khẩu, có thể yêu cầu gửi email cấp lại.</p>
+      <a href="{% url 'manager:reset_password' %}" class="btn btn-warning w-100">Cấp lại mật khẩu</a>
+    </div>
+  </div>
+
+  <form method="post" action="{% url 'logout' %}" class="mt-4">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Đăng xuất</button>
+  </form>
+
+  <div class="mt-3">
+    <a href="{% url 'manager:home' %}" class="btn btn-primary">← Trở lại Trang quản lý</a>
+  </div>
+</div>
+{% endblock %}

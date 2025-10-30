@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <h3 class="mb-4">🕒 Chỉnh sửa thời gian mượn sách</h3>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label class="form-label">Tên sách:</label>
+      <input type="text" class="form-control" value="{{ loan.book.title }}" readonly>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Ngày mượn:</label>
+      <input type="datetime-local" class="form-control" name="borrowed_at" value="{{ loan.borrowed_at|date:'Y-m-d\\TH:i' }}">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Hạn trả:</label>
+      <input type="datetime-local" class="form-control" name="due_date" value="{{ loan.due_date|date:'Y-m-d\\TH:i' }}">
+    </div>
+
+    <button type="submit" class="btn btn-primary">💾 Lưu thay đổi</button>
+    <a href="{% url 'manager:manage_loans' %}" class="btn btn-secondary">⬅ Quay lại</a>
+  </form>
+</div>
+{% endblock %}

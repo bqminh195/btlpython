@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5" style="max-width: 400px;">
+  <h2 class="text-center mb-4 fw-bold">Đăng nhập</h2>
+
+  <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label for="id_username" class="form-label">Tên đăng nhập:</label>
+      <input type="text" name="username" id="id_username" class="form-control" required>
+    </div>
+
+    <div class="mb-1 position-relative">
+      <label for="id_password" class="form-label">Mật khẩu:</label>
+      <input type="password" name="password" id="id_password" class="form-control" required>
+      <i class="bi bi-eye-slash position-absolute" id="togglePassword"
+         style="right: 10px; top: 38px; cursor: pointer;"></i>
+    </div>
+
+    <!-- quên mật khẩu căn phải -->
+    <div class="text-end mb-3">
+      <a href="{% url 'borrower:password_reset' %}" class="text-decoration-none text-danger small">
+        Quên mật khẩu?
+      </a>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+  </form>
+
+  <p class="mt-3 text-center">
+    Chưa có tài khoản? <a href="{% url 'register' %}">Đăng ký</a>
+  </p>
+</div>
+
+<script>
+  const togglePassword = document.querySelector("#togglePassword");
+  const password = document.querySelector("#id_password");
+
+  togglePassword.addEventListener("click", function () {
+    const type = password.getAttribute("type") === "password" ? "text" : "password";
+    password.setAttribute("type", type);
+    this.classList.toggle("bi-eye");
+    this.classList.toggle("bi-eye-slash");
+  });
+</script>
+{% endblock %}

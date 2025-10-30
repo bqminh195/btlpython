@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+
+  <!-- Tiêu đề -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary mb-0">📘 Thêm sách mới</h2>
+    <a href="{% url 'manager:manager_home' %}" class="btn btn-lg btn-outline-secondary shadow-sm px-4">
+      ⬅ Quay lại
+    </a>
+  </div>
+
+  <!-- Form -->
+  <div class="card border-0 shadow-lg rounded-4 p-4">
+    <form method="POST" enctype="multipart/form-data" id="bookForm">
+      {% csrf_token %}
+      <div class="row g-4">
+
+        <!-- Cột trái: thông tin sách -->
+        <div class="col-md-8">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">📖 Tên sách</label>
+            {{ form.title }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">✍️ Tác giả</label>
+            {{ form.author }}
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">📅 Năm xuất bản</label>
+              {{ form.year }}
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">🏷️ Thể loại</label>
+              {{ form.category }}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">📝 Mô tả</label>
+            {{ form.description }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">📚 Số lượng bản</label>
+            {{ form.total_copies }}
+          </div>
+        </div>
+
+        <!-- Cột phải: ảnh bìa -->
+        <div class="col-md-4 text-center">
+          <label class="form-label fw-semibold d-block">🖼️ Ảnh bìa</label>
+          {{ form.cover }}
+          <div class="mt-3">
+            <img id="previewImage" src="#" alt="Xem trước ảnh" class="img-thumbnail rounded shadow-sm d-none" style="max-height: 250px; width: auto;">
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center mt-4">
+        <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm">
+          💾 Lưu sách
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Script xem trước ảnh -->
+<script>
+document.getElementById("id_cover").addEventListener("change", function (e) {
+  const preview = document.getElementById("previewImage");
+  const file = e.target.files[0];
+  if (file) {
+    preview.src = URL.createObjectURL(file);
+    preview.classList.remove("d-none");
+  } else {
+    preview.src = "#";
+    preview.classList.add("d-none");
+  }
+});
+</script>
+
+<style>
+  h2 { color: #004aad; }
+  label { color: #333; }
+  input, textarea, select {
+    border-radius: 10px !important;
+    padding: 10px !important;
+    border: 1px solid #ccc !important;
+    width: 100%;
+  }
+  .btn-outline-secondary {
+    border: 2px solid #0d6efd;
+    color: #0d6efd;
+    font-weight: 500;
+  }
+  .btn-outline-secondary:hover {
+    background-color: #0d6efd;
+    color: white;
+  }
+  .btn-primary {
+    background-color: #0d6efd;
+    border: none;
+  }
+  .btn-primary:hover {
+    background-color: #004aad;
+  }
+</style>
+{% endblock %}

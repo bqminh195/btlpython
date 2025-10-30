@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+
+  <!-- Tiêu đề và nút quay lại -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary mb-0">📖 Quản lý Mượn Sách</h2>
+    <a href="{% url 'manager:manager_home' %}" class="btn btn-lg btn-outline-secondary shadow-sm px-4">
+      ⬅ Quay lại
+    </a>
+  </div>
+
+  <!-- Bộ lọc -->
+  <div class="card shadow-sm border-0 mb-4 rounded-4">
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        <div class="col-md-5">
+          <input type="text" name="q" class="form-control shadow-sm"
+                 placeholder="🔍 Tìm theo người dùng hoặc tên sách..."
+                 value="{{ query }}">
+        </div>
+        <div class="col-md-4">
+          <select name="status" class="form-select shadow-sm">
+            <option value="">-- Tất cả trạng thái --</option>
+            <option value="overdue" {% if filter_status == 'overdue' %}selected{% endif %}>📅 Quá hạn</option>
+            <option value="ontime" {% if filter_status == 'ontime' %}selected{% endif %}>✅ Đang trong hạn</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <button class="btn btn-primary w-100 shadow-sm">Lọc</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Bảng dữ liệu -->
+  <div class="table-responsive shadow-sm rounded-4 overflow-hidden">
+    <table class="table align-middle text-center table-hover mb-0">
+      <thead class="table-dark">
+        <tr>
+          <th>#</th>
+          <th>Người mượn</th>
+          <th>Tên sách</th>
+          <th>Ngày mượn</th>
+          <th>Hạn trả</th>
+          <th>Ngày trả</th>
+          <th>Trạng thái</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for loan in loans %}
+        <tr
+          {% if not loan.returned and loan.due_date < now %}
+            class="table-danger"
+          {% elif loan.returned %}
+            class="table-success"
+          {% else %}
+            class="table-warning"
+          {% endif %}
+        >
+          <td class="fw-semibold">{{ forloop.counter }}</td>
+          <td>{{ loan.user.username }}</td>
+          <td class="text-start">{{ loan.book.title }}</td>
+          <td>{{ loan.borrowed_at|date:"d/m/Y" }}</td>
+          <td>{{ loan.due_date|date:"d/m/Y" }}</td>
+          <td>{% if loan.returned_at %}{{ loan.returned_at|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+
+          <td>
+            {% if not loan.returned and loan.due_date < now %}
+              <span class="badge bg-danger text-light px-3 py-2">⏰ Quá hạn</span>
+            {% elif loan.returned %}
+              <span class="badge bg-success text-light px-3 py-2">✔️ Đã trả</span>
+            {% else %}
+              <span class="badge bg-warning text-dark px-3 py-2">📚 Đang mượn</span>
+            {% endif %}
+          </td>
+
+          <td class="d-flex justify-content-center gap-2">
+          <!-- Nút chỉnh sửa ngày -->
+          <a href="{% url 'manager:edit_loan_dates' loan.id %}" class="btn btn-outline-warning btn-sm rounded-pill shadow-sm">
+            ✏️ Sửa ngày
+          </a>
+
+          <!-- Nút đánh dấu đã trả -->
+          {% if not loan.returned %}
+          <a href="{% url 'manager:mark_returned' loan.id %}" class="btn btn-success btn-sm rounded-pill shadow-sm">
+            ✅ Đã trả
+          </a>
+          {% else %}
+          <span class="text-muted fw-semibold">✔️ Hoàn tất</span>
+          {% endif %}
+        </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center py-4 text-muted">Không có phiếu mượn nào.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Phân trang -->
+  {% if loans.has_other_pages %}
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if loans.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ loans.previous_page_number }}">« Trước</a>
+      </li>
+      {% endif %}
+      {% for num in loans.paginator.page_range %}
+      <li class="page-item {% if num == loans.number %}active{% endif %}">
+        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+      </li>
+      {% endfor %}
+      {% if loans.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ loans.next_page_number }}">Sau »</a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+
+<!-- CSS tinh chỉnh -->
+<style>
+  .table-hover tbody tr:hover {
+    background-color: #f3f6fa !important;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .card {
+    border-left: 5px solid #0d6efd;
+  }
+
+  .btn-outline-secondary:hover {
+    background-color: #0d6efd;
+    color: white;
+  }
+
+  .badge {
+    font-size: 0.9rem;
+  }
+</style>
+{% endblock %}

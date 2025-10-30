@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-lg">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h4 class="mb-0">🕒 Yêu cầu Check-in / Check-out</h4>
+      <a href="{% url 'borrower:borrower_home' %}" class="btn btn-primary btn-sm">
+  ← Trở lại Thư viện
+</a>
+
+    </div>
+
+    <div class="card-body">
+      <!-- Form gửi yêu cầu -->
+      <form method="POST" class="row g-3 mb-4">
+        {% csrf_token %}
+        <div class="col-md-4">
+          {{ form.check_type.label_tag }}
+          {{ form.check_type }}
+        </div>
+        <div class="col-md-8">
+          {{ form.reason.label_tag }}
+          {{ form.reason }}
+        </div>
+        <div class="col-12 text-end">
+          <button type="submit" class="btn btn-success">📨 Gửi yêu cầu</button>
+        </div>
+      </form>
+
+      <!-- Danh sách yêu cầu -->
+      {% if requests %}
+      <div class="table-responsive">
+        <table class="table table-striped align-middle text-center">
+          <thead class="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Loại yêu cầu</th>
+              <th>Lý do</th>
+              <th>Ngày gửi</th>
+              <th>Trạng thái</th>
+              <th>Ghi chú quản lý</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for req in requests %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>
+                {% if req.check_type == 'IN' %}
+                  🟩 Check-in
+                {% else %}
+                  🟥 Check-out
+                {% endif %}
+              </td>
+              <td>{{ req.reason|default:"(Không ghi lý do)" }}</td>
+              <td>{{ req.created_at|date:"d/m/Y H:i" }}</td>
+              <td>
+                {% if req.approved %}
+                  ✅ Đã duyệt
+                {% elif req.rejected %}
+                  ❌ Từ chối
+                {% else %}
+                  ⏳ Đang chờ
+                {% endif %}
+              </td>
+              <td>{{ req.manager_note|default:"(Chưa có phản hồi)" }}</td>
+              <td>
+                {% if not req.approved and not req.rejected %}
+                  <a href="{% url 'borrower:delete_check_request' req.id %}" class="btn btn-sm btn-danger"
+                    onclick="return confirm('Bạn có chắc muốn xóa yêu cầu này không?');">
+                    🗑️ Xóa
+                  </a>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="alert alert-info text-center mt-3">
+          🔔 Bạn chưa có yêu cầu nào. Hãy gửi yêu cầu check-in hoặc check-out ở trên!
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

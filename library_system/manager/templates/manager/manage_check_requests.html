@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-lg">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h4 class="mb-0">🕒 Quản lý yêu cầu Check-in / Check-out</h4>
+      <a href="{% url 'manager:manager_home' %}" class="btn btn-light btn-sm">⬅️ Trở về trang quản lý</a>
+    </div>
+
+    <div class="card-body">
+      {% if requests %}
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center">
+          <thead class="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Người dùng</th>
+              <th>Loại yêu cầu</th>
+              <th>Lý do</th>
+              <th>Ngày gửi</th>
+              <th>Trạng thái</th>
+              <th>Ghi chú của quản lý</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for req in requests %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ req.user.username }}</td>
+              <td>
+                {% if req.check_type == 'IN' %}
+                  🟩 Check-in
+                {% else %}
+                  🟥 Check-out
+                {% endif %}
+              </td>
+              <td>{{ req.reason|default:"(Không có lý do)" }}</td>
+              <td>{{ req.created_at|date:"d/m/Y H:i" }}</td>
+              <td>
+                {% if req.approved %}
+                  ✅ Đã duyệt
+                {% elif req.rejected %}
+                  ❌ Từ chối
+                {% else %}
+                  ⏳ Chờ duyệt
+                {% endif %}
+              </td>
+              <td>{{ req.manager_note|default:"—" }}</td>
+              <td>
+                {% if not req.approved and not req.rejected %}
+                  <a href="{% url 'manager:approve_check_request' req.id %}" class="btn btn-success btn-sm">✔ Duyệt</a>
+                  <a href="{% url 'manager:reject_check_request' req.id %}" class="btn btn-danger btn-sm">✖ Từ chối</a>
+                {% else %}
+                  <span class="text-muted">Đã xử lý</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="alert alert-info text-center p-4">
+        Không có yêu cầu nào.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
